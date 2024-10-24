@@ -1,78 +1,82 @@
 #include <iostream>
+#include <vector>
 using namespace std;
 
-const int N = 4; // Define the size of the chessboard
-
-// Function to print the board configuration
-void printBoard(int board[N][N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            cout << board[i][j] << " ";
+void addSolution(vector<vector<int>> &ans, vector<vector<int>> &board, int n) {
+    vector<int> temp;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            temp.push_back(board[i][j]);
         }
-        cout << endl;
     }
-    cout << endl;
+    ans.push_back(temp);
 }
 
-// Function to check if a queen can be placed at board[row][col]
-bool isSafe(int board[N][N], int row, int col) {
-    // Check if there is a queen in the same column above
-    for (int i = 0; i < row; i++) {
-        if (board[i][col])
+bool isSafe(int row, int col, vector<vector<int>> &board, int n) {
+    
+    //check for row
+    for (int y = 0; y < col; y++) {
+        if (board[row][y] == 1)
             return false;
     }
 
-    // Check upper left diagonal
-    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
-        if (board[i][j])
+    //upar wali diagonal
+    for (int x = row, y = col; x >= 0 && y >= 0; x--, y--) {
+        if (board[x][y] == 1)
             return false;
     }
 
-    // Check upper right diagonal
-    for (int i = row, j = col; i >= 0 && j < N; i--, j++) {
-        if (board[i][j])
+    // niche wala diagonal
+    for (int x = row, y = col; x < n && y >= 0; x++, y--) {
+        if (board[x][y] == 1)
             return false;
     }
 
     return true;
 }
 
-// Function to solve N-Queens problem using backtracking
-bool solveNQueens(int board[N][N], int row) {
-    // If all queens are placed, return true
-    if (row >= N)
-        return true;
-
-    // Try placing queen in each column of the current row
-    for (int col = 0; col < N; col++) {
-        if (isSafe(board, row, col)) {
-            // Place the queen
-            board[row][col] = 1;
-
-            // Recur to place the rest of the queens
-            if (solveNQueens(board, row + 1))
-                return true;
-
-            // If placing queen in board[row][col] doesn't lead to a solution, backtrack
-            board[row][col] = 0; // Backtrack
-        }
+void solve(int col, vector<vector<int>> &ans, vector<vector<int>> &board, int n) {
+    // Base case: If all queens are placed
+    if (col == n) {
+        addSolution(ans, board, n);
+        return;
     }
 
-    // If no column is suitable in this row, return false
-    return false;
+    //ek baar solve kar lo baki recurssion kar lega
+    for (int row = 0; row < n; row++) {
+        if (isSafe(row, col, board, n)) {
+            //queen rakhna safe hai?
+            board[row][col] = 1;
+            //agle column ke liye rakho
+            solve(col + 1, ans, board, n);
+            //backtrack // queen ko hatana padega 
+            board[row][col] = 0; 
+        }
+    }
+}
+
+vector<vector<int>> nQueens(int n) {
+    vector<vector<int>> board(n, vector<int>(n, 0)); // Initialize board
+    vector<vector<int>> ans; // to store result
+    solve(0, ans, board, n); // Start solving from the first column
+    return ans;
 }
 
 int main() {
-    int board[N][N] = { {0, 0, 0, 0},
-                        {0, 0, 0, 0},
-                        {0, 0, 0, 0},
-                        {0, 0, 0, 0} };
+    int n = 4; // Fixed number of queens
 
-    if (solveNQueens(board, 0)) {
-        cout << "Solution found:" << endl;
-        printBoard(board);
-    } else {
-        cout << "No solution exists for N=" << N << endl;
+    vector<vector<int>> solutions = nQueens(n);
+
+    cout << "Total solutions for 4 queens: " << solutions.size() << endl;
+    for (int i = 0; i < solutions.size(); i++) {
+        cout << "Solution " << i + 1 << ":" << endl;
+        for (int j = 0; j < n; j++) {
+            for (int k = 0; k < n; k++) {
+                cout << solutions[i][j * n + k] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl; 
     }
 
     return 0;
